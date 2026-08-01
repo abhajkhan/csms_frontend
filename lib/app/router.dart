@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/attendance/presentation/pages/attendance_page.dart';
 import '../features/auth/presentation/pages/forgot_password_page.dart';
 import '../features/auth/presentation/pages/login_page.dart';
+import '../features/auth/presentation/pages/splash_page.dart';
+import '../features/auth/presentation/controllers/auth_controller.dart';
+import '../features/auth/models/auth_state.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../features/expenses/presentation/pages/expenses_page.dart';
 import '../features/reports/presentation/pages/reports_page.dart';
@@ -12,6 +16,7 @@ import '../features/sites/presentation/pages/sites_page.dart';
 import '../features/workers/presentation/pages/workers_page.dart';
 
 abstract final class AppRoutes {
+  static const splash = '/splash';
   static const login = '/login';
   static const forgotPassword = '/forgot-password';
   static const dashboard = '/dashboard';
@@ -23,9 +28,34 @@ abstract final class AppRoutes {
   static const settings = '/settings';
 }
 
-GoRouter createAppRouter() => GoRouter(
-  initialLocation: AppRoutes.login,
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final router = createAppRouter(ref);
+  ref.listen(authControllerProvider, (_, _) => router.refresh());
+  ref.onDispose(router.dispose);
+  return router;
+});
+
+GoRouter createAppRouter(Ref ref) => GoRouter(
+  initialLocation: AppRoutes.splash,
+  redirect: (context, state) {
+    final authState = ref.read(authControllerProvider);
+    final session = authState.valueOrNull;
+    final isChecking = authState.isLoading || session?.status == AuthStatus.checking;
+    final location = state.uri.path;
+    final isPublicRoute = location == AppRoutes.login || location == AppRoutes.forgotPassword;
+
+    if (isChecking) return location == AppRoutes.splash ? null : AppRoutes.splash;
+    if (session == null || !session.isAuthenticated) {
+      return isPublicRoute ? null : AppRoutes.login;
+    }
+    if (location == AppRoutes.splash || isPublicRoute) return AppRoutes.dashboard;
+    return null;
+  },
   routes: [
+    GoRoute(
+      path: AppRoutes.splash,
+      builder: (context, state) => const SplashPage(),
+    ),
     GoRoute(
       path: AppRoutes.login,
       builder: (context, state) => const LoginPage(),

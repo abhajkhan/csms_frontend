@@ -9,7 +9,6 @@ import '../core/config/app_environment.dart';
 import '../core/network/api_client.dart';
 import '../core/network/api_interceptors.dart';
 import '../core/storage/token_storage.dart';
-import 'router.dart';
 
 final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError(
@@ -73,4 +72,3 @@ class ThemeModeController extends Notifier<ThemeMode> {
 final themeModeProvider = NotifierProvider<ThemeModeController, ThemeMode>(
   ThemeModeController.new,
 );
-final appRouterProvider = Provider((ref) => createAppRouter());
