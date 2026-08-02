@@ -31,6 +31,16 @@ class AuthController extends AsyncNotifier<AuthState> {
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
+      // returning success always for testing while API is being ready
+      return AuthState.authenticated(
+        AuthUser(
+          id: "1",
+          name: "Abhaj",
+          username: "abhajkhan",
+          role: UserRole.supervisor,
+        ),
+      );
+
       final session = await ref
           .read(authRepositoryProvider)
           .login(usernameOrPhone: usernameOrPhone, password: password);
@@ -58,7 +68,7 @@ class AuthController extends AsyncNotifier<AuthState> {
     id: claims['sub']?.toString() ?? claims['user_id']?.toString() ?? '',
     name: claims['name']?.toString() ?? '',
     username: claims['username']?.toString() ?? '',
-    role: claims['role']?.toString() ?? '',
+    role: UserRole.fromString(claims['role']?.toString()),
   );
 }
 

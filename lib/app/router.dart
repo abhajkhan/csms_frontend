@@ -8,6 +8,7 @@ import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/splash_page.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/auth/models/auth_state.dart';
+import '../features/auth/models/auth_user.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../features/expenses/presentation/pages/expenses_page.dart';
 import '../features/reports/presentation/pages/reports_page.dart';
@@ -40,15 +41,21 @@ GoRouter createAppRouter(Ref ref) => GoRouter(
   redirect: (context, state) {
     final authState = ref.read(authControllerProvider);
     final session = authState.valueOrNull;
-    final isChecking = authState.isLoading || session?.status == AuthStatus.checking;
+    final isChecking =
+        authState.isLoading || session?.status == AuthStatus.checking;
     final location = state.uri.path;
-    final isPublicRoute = location == AppRoutes.login || location == AppRoutes.forgotPassword;
+    final isPublicRoute =
+        location == AppRoutes.login || location == AppRoutes.forgotPassword;
 
-    if (isChecking) return location == AppRoutes.splash ? null : AppRoutes.splash;
+    if (isChecking) {
+      return location == AppRoutes.splash ? null : AppRoutes.splash;
+    }
     if (session == null || !session.isAuthenticated) {
       return isPublicRoute ? null : AppRoutes.login;
     }
-    if (location == AppRoutes.splash || isPublicRoute) return AppRoutes.dashboard;
+    if (location == AppRoutes.splash || isPublicRoute) {
+      return _defaultRouteFor(session.user!.role);
+    }
     return null;
   },
   routes: [
@@ -96,3 +103,14 @@ GoRouter createAppRouter(Ref ref) => GoRouter(
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Page not found: ${state.uri.path}'))),
 );
+
+String _defaultRouteFor(UserRole role) {
+  switch (role) {
+    case UserRole.admin:
+      return AppRoutes.dashboard;
+    case UserRole.supervisor:
+      return AppRoutes.expenses;
+    case UserRole.driver:
+      return AppRoutes.dashboard;
+  }
+}

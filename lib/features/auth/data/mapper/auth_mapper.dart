@@ -15,7 +15,7 @@ class AuthMapper {
       id: _requiredString(dto.user, 'id'),
       name: _optionalString(dto.user, 'name'),
       username: _optionalString(dto.user, 'username'),
-      role: _optionalString(dto.user, 'role'),
+      role: UserRole.fromString(_requiredString(dto.user, 'role')),
     ),
   );
 

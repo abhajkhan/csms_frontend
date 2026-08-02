@@ -156,16 +156,6 @@ Authenticate users securely and provide account recovery before allowing access 
 
 ---
 
-Priority
-
-★★★★★
-
-Release
-
-MVP
-
----
-
 Available Roles
 
 All Users
@@ -375,8 +365,6 @@ Provide a quick overview of daily operations.
 Available Roles
 
 Admin
-
-Supervisor
 
 ---
 
