@@ -15,6 +15,7 @@ import '../features/reports/presentation/pages/reports_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
 import '../features/sites/presentation/pages/sites_page.dart';
 import '../features/workers/presentation/pages/workers_page.dart';
+import '../shared/layouts/page_scaffold.dart';
 
 abstract final class AppRoutes {
   static const splash = '/splash';
@@ -71,33 +72,67 @@ GoRouter createAppRouter(Ref ref) => GoRouter(
       path: AppRoutes.forgotPassword,
       builder: (context, state) => const ForgotPasswordPage(),
     ),
-    GoRoute(
-      path: AppRoutes.dashboard,
-      builder: (context, state) => const DashboardPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.workers,
-      builder: (context, state) => const WorkersPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.sites,
-      builder: (context, state) => const SitesPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.attendance,
-      builder: (context, state) => const AttendancePage(),
-    ),
-    GoRoute(
-      path: AppRoutes.expenses,
-      builder: (context, state) => const ExpensesPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.reports,
-      builder: (context, state) => const ReportsPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.settings,
-      builder: (context, state) => const SettingsPage(),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          AppPageScaffold(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.dashboard,
+              builder: (context, state) => const DashboardPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.workers,
+              builder: (context, state) => const WorkersPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.sites,
+              builder: (context, state) => const SitesPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.attendance,
+              builder: (context, state) => const AttendancePage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.expenses,
+              builder: (context, state) => const ExpensesPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.reports,
+              builder: (context, state) => const ReportsPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.settings,
+              builder: (context, state) => const SettingsPage(),
+            ),
+          ],
+        ),
+      ],
     ),
   ],
   errorBuilder: (context, state) =>

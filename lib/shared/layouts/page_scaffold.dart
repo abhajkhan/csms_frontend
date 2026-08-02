@@ -2,60 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../app/router.dart';
 import '../../app/theme.dart';
 import '../../features/auth/models/auth_user.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import 'responsive_layout.dart';
 
 class AppPageScaffold extends ConsumerWidget {
-  const AppPageScaffold({super.key, required this.title, required this.child});
+  const AppPageScaffold({super.key, required this.navigationShell});
 
-  final String title;
-  final Widget child;
+  final StatefulNavigationShell navigationShell;
 
   static final _allDestinations = <_NavigationDestination>[
     _NavigationDestination(
       'Dashboard',
       Icons.dashboard_outlined,
-      AppRoutes.dashboard,
+      branchIndex: 0,
       roles: [UserRole.admin],
     ),
     _NavigationDestination(
       'Workers',
       Icons.groups_outlined,
-      AppRoutes.workers,
+      branchIndex: 1,
       roles: [UserRole.admin, UserRole.supervisor],
     ),
     _NavigationDestination(
       'Sites',
       Icons.location_city_outlined,
-      AppRoutes.sites,
+      branchIndex: 2,
       roles: [UserRole.admin],
     ),
     _NavigationDestination(
       'Attendance',
       Icons.fact_check_outlined,
-      AppRoutes.attendance,
+      branchIndex: 3,
       roles: [UserRole.admin, UserRole.supervisor],
     ),
     _NavigationDestination(
       'Expenses',
       Icons.receipt_long_outlined,
-      AppRoutes.expenses,
+      branchIndex: 4,
       roles: [UserRole.admin, UserRole.supervisor],
     ),
     _NavigationDestination(
       'Reports',
       Icons.assessment_outlined,
-      AppRoutes.reports,
+      branchIndex: 5,
       roles: [UserRole.admin],
     ),
-    _NavigationDestination(
-      'Settings',
-      Icons.settings_outlined,
-      AppRoutes.settings,
-    ),
+    _NavigationDestination('Settings', Icons.settings_outlined, branchIndex: 6),
   ];
 
   @override
@@ -68,80 +62,70 @@ class AppPageScaffold extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final destinations = _allDestinations.where((d) {
-      if (d.roles == null) return true;
-      return d.roles!.contains(userRole);
+    final destinations = _allDestinations.where((destination) {
+      return destination.roles == null || destination.roles!.contains(userRole);
     }).toList();
-
-    final currentLocation = GoRouterState.of(context).uri.path;
-    // Reverse search or check longer routes first so '/' doesn't hijack everything
-    final rawIndex = destinations.indexWhere(
-      (item) => item.route != '/'
-          ? currentLocation.startsWith(item.route)
-          : currentLocation == '/',
+    final selectedDestination = destinations.firstWhere(
+      (destination) => destination.branchIndex == navigationShell.currentIndex,
+      orElse: () => destinations.first,
     );
-
-    // Fallback to tab 0 if no match found
-    final selectedIndex = rawIndex == -1 ? 0 : rawIndex;
-    final content = _PageContent(title: title, child: child);
     final mobileDestinations = _mobileDestinations(destinations);
     final mobileSelectedIndex = _mobileSelectedIndex(
-      destinations: destinations,
-      mobileDestinations: mobileDestinations,
-      currentLocation: currentLocation,
+      selectedDestination,
+      mobileDestinations,
+    );
+    final content = _PageContent(
+      title: selectedDestination.label,
+      child: navigationShell,
     );
 
     return ResponsiveLayout(
       mobile: Scaffold(
-        appBar: AppBar(title: Text(title)),
+        appBar: AppBar(title: Text(selectedDestination.label)),
         body: content,
-        bottomNavigationBar: destinations.isEmpty
-            ? null
-            : NavigationBar(
-                selectedIndex: mobileSelectedIndex,
-                onDestinationSelected: (index) {
-                  final destination = mobileDestinations[index];
-                  if (destination.isMore) {
-                    _showMoreDestinations(
-                      context,
-                      destinations
-                          .where((item) => !mobileDestinations.contains(item))
-                          .toList(),
-                    );
-                    return;
-                  }
-                  context.go(destination.route);
-                },
-                destinations: mobileDestinations
-                    .map(
-                      (item) => NavigationDestination(
-                        icon: Icon(item.icon),
-                        label: item.label,
-                      ),
-                    )
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: mobileSelectedIndex,
+          onDestinationSelected: (index) {
+            final destination = mobileDestinations[index];
+            if (destination.isMore) {
+              _showMoreDestinations(
+                context,
+                destinations
+                    .where((item) => !mobileDestinations.contains(item))
                     .toList(),
-              ),
+              );
+              return;
+            }
+            navigationShell.goBranch(destination.branchIndex!);
+          },
+          destinations: mobileDestinations
+              .map(
+                (item) => NavigationDestination(
+                  icon: Icon(item.icon),
+                  label: item.label,
+                ),
+              )
+              .toList(),
+        ),
       ),
       tablet: Scaffold(
         body: Row(
           children: [
-            if (destinations.isNotEmpty) ...[
-              NavigationRail(
-                selectedIndex: selectedIndex,
-                labelType: NavigationRailLabelType.all,
-                onDestinationSelected: (index) =>
-                    context.go(destinations[index].route),
-                destinations: destinations
-                    .map(
-                      (item) => NavigationRailDestination(
-                        icon: Icon(item.icon),
-                        label: Text(item.label),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const VerticalDivider(width: 1),
-            ],
+            NavigationRail(
+              selectedIndex: destinations.indexOf(selectedDestination),
+              labelType: NavigationRailLabelType.all,
+              onDestinationSelected: (index) =>
+                  navigationShell.goBranch(destinations[index].branchIndex!),
+              destinations: destinations
+                  .map(
+                    (item) => NavigationRailDestination(
+                      icon: Icon(item.icon),
+                      label: Text(item.label),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const VerticalDivider(width: 1),
             Expanded(child: content),
           ],
         ),
@@ -151,31 +135,29 @@ class AppPageScaffold extends ConsumerWidget {
           children: [
             SizedBox(
               width: 240,
-              child: destinations.isEmpty
-                  ? null
-                  : NavigationDrawer(
-                      selectedIndex: selectedIndex,
-                      onDestinationSelected: (index) =>
-                          context.go(destinations[index].route),
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(AppSpacing.lg),
-                          child: Text(
-                            'CSMS',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        ...destinations.map(
-                          (item) => NavigationDrawerDestination(
-                            icon: Icon(item.icon),
-                            label: Text(item.label),
-                          ),
-                        ),
-                      ],
+              child: NavigationDrawer(
+                selectedIndex: destinations.indexOf(selectedDestination),
+                onDestinationSelected: (index) =>
+                    navigationShell.goBranch(destinations[index].branchIndex!),
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(AppSpacing.lg),
+                    child: Text(
+                      'CSMS',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
+                  ),
+                  ...destinations.map(
+                    (item) => NavigationDrawerDestination(
+                      icon: Icon(item.icon),
+                      label: Text(item.label),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const VerticalDivider(width: 1),
             Expanded(child: content),
@@ -188,29 +170,21 @@ class AppPageScaffold extends ConsumerWidget {
   List<_NavigationDestination> _mobileDestinations(
     List<_NavigationDestination> destinations,
   ) {
-    const primaryRoutes = {
-      AppRoutes.dashboard,
-      AppRoutes.workers,
-      AppRoutes.expenses,
-    };
-    final primary = destinations
-        .where((item) => primaryRoutes.contains(item.route))
-        .toList();
-
+    const primaryBranches = {0, 1, 4};
     if (destinations.length <= 5) return destinations;
-    return [...primary, _NavigationDestination.more];
+    return [
+      ...destinations.where(
+        (destination) => primaryBranches.contains(destination.branchIndex),
+      ),
+      _NavigationDestination.more,
+    ];
   }
 
-  int _mobileSelectedIndex({
-    required List<_NavigationDestination> destinations,
-    required List<_NavigationDestination> mobileDestinations,
-    required String currentLocation,
-  }) {
-    final fullSelected = destinations.firstWhere(
-      (item) => currentLocation.startsWith(item.route),
-      orElse: () => mobileDestinations.first,
-    );
-    final index = mobileDestinations.indexOf(fullSelected);
+  int _mobileSelectedIndex(
+    _NavigationDestination selectedDestination,
+    List<_NavigationDestination> mobileDestinations,
+  ) {
+    final index = mobileDestinations.indexOf(selectedDestination);
     return index == -1 ? mobileDestinations.length - 1 : index;
   }
 
@@ -232,7 +206,7 @@ class AppPageScaffold extends ConsumerWidget {
                 title: Text(item.label),
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  context.go(item.route);
+                  navigationShell.goBranch(item.branchIndex!);
                 },
               ),
             ),
@@ -276,18 +250,19 @@ class _PageContent extends StatelessWidget {
 }
 
 class _NavigationDestination {
-  const _NavigationDestination(this.label, this.icon, this.route, {this.roles});
+  const _NavigationDestination(
+    this.label,
+    this.icon, {
+    this.branchIndex,
+    this.roles,
+  });
 
-  static const more = _NavigationDestination(
-    'More',
-    Icons.more_horiz_outlined,
-    '',
-  );
+  static const more = _NavigationDestination('More', Icons.more_horiz_outlined);
 
   final String label;
   final IconData icon;
-  final String route;
+  final int? branchIndex;
   final List<UserRole>? roles;
 
-  bool get isMore => route.isEmpty;
+  bool get isMore => branchIndex == null;
 }
