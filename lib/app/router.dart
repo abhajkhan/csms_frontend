@@ -14,6 +14,7 @@ import '../features/expenses/presentation/pages/expenses_page.dart';
 import '../features/reports/presentation/pages/reports_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
 import '../features/sites/presentation/pages/sites_page.dart';
+import '../features/workers/presentation/pages/worker_details_page.dart';
 import '../features/workers/presentation/pages/workers_page.dart';
 import '../shared/layouts/page_scaffold.dart';
 
@@ -23,6 +24,7 @@ abstract final class AppRoutes {
   static const forgotPassword = '/forgot-password';
   static const dashboard = '/dashboard';
   static const workers = '/workers';
+  static const workerDetails = '/workers/:id';
   static const sites = '/sites';
   static const attendance = '/attendance';
   static const expenses = '/expenses';
@@ -89,6 +91,16 @@ GoRouter createAppRouter(Ref ref) => GoRouter(
             GoRoute(
               path: AppRoutes.workers,
               builder: (context, state) => const WorkersPage(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (context, state) {
+                    final idStr = state.pathParameters['id'];
+                    final id = int.tryParse(idStr ?? '') ?? 0;
+                    return WorkerDetailsPage(workerId: id);
+                  },
+                ),
+              ],
             ),
           ],
         ),

@@ -6,7 +6,7 @@ class JwtToken {
   static bool isExpired(String token, {DateTime? now}) {
     try {
       final payload = decodeClaims(token);
-      if (payload is! Map<String, dynamic> || payload['exp'] is! num) {
+      if (payload['exp'] is! num) {
         return true;
       }
       final expiry = DateTime.fromMillisecondsSinceEpoch(
