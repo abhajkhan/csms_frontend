@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../auth/models/auth_user.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../../shared/layouts/responsive_layout.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/empty_widget.dart';
@@ -21,6 +23,11 @@ class WorkersPage extends ConsumerWidget {
     final isMobile = ResponsiveLayout.isMobile(context);
     final theme = Theme.of(context);
 
+    final userRole = ref.watch(
+      authControllerProvider.select((s) => s.valueOrNull?.user?.role),
+    );
+    final isAdmin = userRole == UserRole.admin;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Worker Management'),
@@ -32,7 +39,7 @@ class WorkersPage extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: isMobile
+      floatingActionButton: (isMobile && isAdmin)
           ? FloatingActionButton(
               onPressed: () => _openAddWorkerDialog(context, ref),
               child: const Icon(Icons.add),
@@ -60,7 +67,9 @@ class WorkersPage extends ConsumerWidget {
                         .read(workerListControllerProvider.notifier)
                         .setStatusFilter(statusFilter);
                   },
-                  onAddWorkerPressed: () => _openAddWorkerDialog(context, ref),
+                  onAddWorkerPressed: isAdmin
+                      ? () => _openAddWorkerDialog(context, ref)
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 if (state.isEmpty)
@@ -70,12 +79,16 @@ class WorkersPage extends ConsumerWidget {
                       title: 'No Workers Found',
                       message: state.filter.searchQuery.isNotEmpty
                           ? 'No worker matching "${state.filter.searchQuery}" was found.'
-                          : 'No workers registered yet. Click below to add a new worker.',
-                      action: ElevatedButton.icon(
-                        onPressed: () => _openAddWorkerDialog(context, ref),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Worker'),
-                      ),
+                          : isAdmin
+                              ? 'No workers registered yet. Click below to add a new worker.'
+                              : 'No workers registered yet.',
+                      action: isAdmin
+                          ? ElevatedButton.icon(
+                              onPressed: () => _openAddWorkerDialog(context, ref),
+                              icon: const Icon(Icons.add),
+                              label: const Text('Add Worker'),
+                            )
+                          : null,
                     ),
                   )
                 else ...[
