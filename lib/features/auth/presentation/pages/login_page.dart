@@ -23,6 +23,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _passwordVisible = false;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -32,13 +33,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    await ref
-        .read(authControllerProvider.notifier)
-        .login(
-          usernameOrPhone: _usernameController.text.trim(),
-          password: _passwordController.text,
-        );
+    debugPrint('Login submit pressed: ${_usernameController.text.trim()}');
+    if (!_formKey.currentState!.validate()) {
+      debugPrint('Login submit validation failed.');
+      return;
+    }
+    if (_isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ref
+          .read(authControllerProvider.notifier)
+          .login(
+            phone: _usernameController.text.trim(),
+            password: _passwordController.text,
+          );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   @override
@@ -46,6 +60,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final auth = ref.watch(authControllerProvider);
     final isLoading = auth.isLoading;
     final error = auth.error;
+    final buttonLoading = _isSubmitting || isLoading;
 
     return Scaffold(
       body: SafeArea(
@@ -62,16 +77,25 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('CSMS', style: Theme.of(context).textTheme.headlineMedium),
+                      Text(
+                        'CSMS',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
                       const SizedBox(height: AppSpacing.xs),
-                      Text('Welcome back. Sign in to continue.', style: Theme.of(context).textTheme.bodyLarge),
+                      Text(
+                        'Welcome back. Sign in to continue.',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
                       const SizedBox(height: AppSpacing.lg),
                       AppTextField(
-                        label: 'Username or phone',
+                        label: 'Phone number',
                         controller: _usernameController,
                         keyboardType: TextInputType.text,
                         enabled: !isLoading,
-                        validator: (value) => value == null || value.trim().isEmpty ? 'Enter your username or phone number.' : null,
+                        validator: (value) =>
+                            value == null || value.trim().length < 7
+                            ? 'Enter your registered phone number.'
+                            : null,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       TextFormField(
@@ -79,16 +103,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         obscureText: !_passwordVisible,
                         enabled: !isLoading,
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Enter your password.';
-                          if (value.length < 8) return 'Password must be at least 8 characters.';
+                          if (value == null || value.isEmpty) {
+                            return 'Enter your password.';
+                          }
+                          if (value.length < 6) {
+                            return 'Password must be at least 6 characters.';
+                          }
                           return null;
                         },
                         decoration: InputDecoration(
                           labelText: 'Password',
                           suffixIcon: IconButton(
-                            tooltip: _passwordVisible ? 'Hide password' : 'Show password',
-                            onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
-                            icon: Icon(_passwordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                            tooltip: _passwordVisible
+                                ? 'Hide password'
+                                : 'Show password',
+                            onPressed: () => setState(
+                              () => _passwordVisible = !_passwordVisible,
+                            ),
+                            icon: Icon(
+                              _passwordVisible
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                            ),
                           ),
                         ),
                       ),
@@ -97,7 +133,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         alignment: Alignment.centerRight,
                         child: AppTextButton(
                           label: 'Forgot password?',
-                          onPressed: isLoading ? null : () => context.go(AppRoutes.forgotPassword),
+                          onPressed: isLoading
+                              ? null
+                              : () => context.go(AppRoutes.forgotPassword),
                         ),
                       ),
                       if (error != null) ...[
@@ -107,7 +145,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       const SizedBox(height: AppSpacing.md),
                       SizedBox(
                         width: double.infinity,
-                        child: AppPrimaryButton(label: 'Sign in', isLoading: isLoading, onPressed: _submit, icon: Icons.login),
+                        child: AppPrimaryButton(
+                          label: 'Sign in',
+                          isLoading: buttonLoading,
+                          onPressed: _submit,
+                          icon: Icons.login,
+                        ),
                       ),
                     ],
                   ),
@@ -120,5 +163,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  String _messageFor(Object error) => error is ApiException ? error.message : 'Unable to sign in. Please try again.';
+  String _messageFor(Object error) => error is ApiException
+      ? error.message
+      : 'Unable to sign in. Please try again.';
 }

@@ -8,13 +8,20 @@ class ApiClient {
   Future<Response<T>> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
-  }) => _dio.get<T>(path, queryParameters: queryParameters);
+    Options? options,
+  }) => _dio.get<T>(path, queryParameters: queryParameters, options: options);
 
   Future<Response<T>> post<T>(
     String path, {
     Object? data,
     Map<String, dynamic>? queryParameters,
-  }) => _dio.post<T>(path, data: data, queryParameters: queryParameters);
+    Options? options,
+  }) => _dio.post<T>(
+    path,
+    data: data,
+    queryParameters: queryParameters,
+    options: options,
+  );
 
   Future<Response<T>> put<T>(String path, {Object? data}) =>
       _dio.put<T>(path, data: data);

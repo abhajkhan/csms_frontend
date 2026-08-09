@@ -2,75 +2,71 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers.dart';
 import '../../models/auth_state.dart';
-import '../../models/auth_user.dart';
-import '../../models/jwt_token.dart';
 import '../providers/auth_providers.dart';
 
 class AuthController extends AsyncNotifier<AuthState> {
   @override
   Future<AuthState> build() async {
     final tokenStorage = ref.read(tokenStorageProvider);
-    final token = await tokenStorage.readAccessToken();
-    if (token == null || JwtToken.isExpired(token)) {
-      if (token != null) await tokenStorage.clear();
-      return const AuthState.unauthenticated();
-    }
+    ref.listen(sessionInvalidationProvider, (previous, next) {
+      state = const AsyncData(AuthState.unauthenticated());
+    });
 
     try {
-      final claims = JwtToken.decodeClaims(token);
-      return AuthState.authenticated(_userFromClaims(claims));
-    } on FormatException {
+      final accessToken = await tokenStorage.readAccessToken();
+      final refreshToken = await tokenStorage.readRefreshToken();
+      if (accessToken == null || accessToken.isEmpty) {
+        if (refreshToken == null || refreshToken.isEmpty) {
+          return const AuthState.unauthenticated();
+        }
+        final tokens = await ref
+            .read(authRepositoryProvider)
+            .refresh(refreshToken);
+        await tokenStorage.saveTokens(
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+        );
+      }
+      final user = await ref.read(authRepositoryProvider).currentUser();
+      return AuthState.authenticated(user);
+    } catch (_) {
       await tokenStorage.clear();
       return const AuthState.unauthenticated();
     }
   }
 
-  Future<void> login({
-    required String usernameOrPhone,
-    required String password,
-  }) async {
+  Future<void> login({required String phone, required String password}) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      try {
-        final session = await ref
-            .read(authRepositoryProvider)
-            .login(usernameOrPhone: usernameOrPhone, password: password);
-        if (JwtToken.isExpired(session.tokens.accessToken)) {
-          throw const FormatException(
-            'The server returned an expired access token.',
+      final tokens = await ref
+          .read(authRepositoryProvider)
+          .login(phone: phone, password: password);
+      await ref
+          .read(tokenStorageProvider)
+          .saveTokens(
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
           );
-        }
-        await ref
-            .read(tokenStorageProvider)
-            .saveTokens(
-              accessToken: session.tokens.accessToken,
-              refreshToken: session.tokens.refreshToken,
-            );
-        return AuthState.authenticated(session.user);
+      try {
+        final user = await ref.read(authRepositoryProvider).currentUser();
+        return AuthState.authenticated(user);
       } catch (_) {
-        return AuthState.authenticated(
-          AuthUser(
-            id: "1",
-            name: "Abhaj",
-            username: "abhajkhan",
-            role: UserRole.supervisor,
-          ),
-        );
+        await ref.read(tokenStorageProvider).clear();
+        rethrow;
       }
     });
   }
 
   Future<void> logout() async {
+    try {
+      await ref.read(authRepositoryProvider).logout();
+    } catch (_) {
+      // The contract defines logout as client-side invalidation. Clearing local
+      // credentials is therefore required even if the network request fails.
+    }
     await ref.read(tokenStorageProvider).clear();
     state = const AsyncData(AuthState.unauthenticated());
   }
-
-  AuthUser _userFromClaims(Map<String, dynamic> claims) => AuthUser(
-    id: claims['sub']?.toString() ?? claims['user_id']?.toString() ?? '',
-    name: claims['name']?.toString() ?? '',
-    username: claims['username']?.toString() ?? '',
-    role: UserRole.fromString(claims['role']?.toString()),
-  );
 }
 
 final authControllerProvider = AsyncNotifierProvider<AuthController, AuthState>(

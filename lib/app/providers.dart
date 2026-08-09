@@ -28,19 +28,36 @@ final tokenStorageProvider = Provider<TokenStorage>(
   (ref) => TokenStorage(ref.watch(secureStorageProvider)),
 );
 
+/// Incremented when refresh authentication fails so the UI can leave an
+/// invalid server session immediately.
+final sessionInvalidationProvider = StateProvider<int>((ref) => 0);
+
 final dioProvider = Provider<Dio>((ref) {
   final config = ref.watch(appEnvironmentProvider);
-  return Dio(
-      BaseOptions(
-        baseUrl: config.apiBaseUrl,
-        contentType: ApiConfig.contentType,
-        connectTimeout: ApiConfig.connectTimeout,
-        receiveTimeout: ApiConfig.receiveTimeout,
-        sendTimeout: ApiConfig.sendTimeout,
-      ),
-    )
+  final options = BaseOptions(
+    baseUrl: config.apiBaseUrl,
+    contentType: ApiConfig.contentType,
+    connectTimeout: ApiConfig.connectTimeout,
+    receiveTimeout: ApiConfig.receiveTimeout,
+    sendTimeout: ApiConfig.sendTimeout,
+  );
+  final refreshDio = Dio(
+    BaseOptions(
+      baseUrl: config.apiBaseUrl,
+      contentType: ApiConfig.contentType,
+      connectTimeout: ApiConfig.connectTimeout,
+      receiveTimeout: ApiConfig.receiveTimeout,
+      sendTimeout: ApiConfig.sendTimeout,
+    ),
+  );
+  return Dio(options)
     ..interceptors.addAll([
-      AuthenticationInterceptor(ref.watch(tokenStorageProvider)),
+      AuthenticationInterceptor(
+        ref.watch(tokenStorageProvider),
+        refreshDio,
+        onSessionExpired: () =>
+            ref.read(sessionInvalidationProvider.notifier).state++,
+      ),
       ApiLogInterceptor(),
     ]);
 });

@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_client.dart';
-import '../../models/auth_session.dart';
+import '../../models/auth_tokens.dart';
+import '../../models/auth_user.dart';
+import '../../../../core/network/api_interceptors.dart';
 import '../dto/auth_response_dto.dart';
 import '../dto/login_request_dto.dart';
 import '../mapper/auth_mapper.dart';
@@ -9,27 +11,67 @@ import '../mapper/auth_mapper.dart';
 class AuthRepository {
   AuthRepository(this._apiClient);
 
-  static const _loginPath = '/auth/login';
+  static const _loginPath = '/api/v1/auth/login';
+  static const _refreshPath = '/api/v1/auth/refresh';
+  static const _logoutPath = '/api/v1/auth/logout';
+  static const _mePath = '/api/v1/auth/me';
+  static const _changePasswordPath = '/api/v1/auth/change-password';
   final ApiClient _apiClient;
 
-  Future<AuthSession> login({
-    required String usernameOrPhone,
+  Future<AuthTokens> login({
+    required String phone,
     required String password,
   }) async {
     final response = await _apiClient.post<Map<String, dynamic>>(
       _loginPath,
-      data: LoginRequestDto(
-        usernameOrPhone: usernameOrPhone,
-        password: password,
-      ).toJson(),
+      data: LoginRequestDto(phone: phone, password: password).toJson(),
+      options: Options(
+        extra: {AuthenticationInterceptor.skipAuthRefreshKey: true},
+      ),
     );
     final body = response.data;
     if (body == null) throw const FormatException('Empty login response.');
-    final payload = body['data'] is Map<String, dynamic>
-        ? body['data'] as Map<String, dynamic>
-        : body;
-    return AuthMapper.toSession(AuthResponseDto.fromJson(payload));
+    return AuthMapper.toTokens(AuthResponseDto.fromJson(body));
   }
+
+  Future<AuthTokens> refresh(String refreshToken) async {
+    final response = await _apiClient.post<Map<String, dynamic>>(
+      _refreshPath,
+      data: {'refresh_token': refreshToken},
+      options: Options(
+        extra: {AuthenticationInterceptor.skipAuthRefreshKey: true},
+      ),
+    );
+    final body = response.data;
+    if (body == null) {
+      throw const FormatException('Empty token refresh response.');
+    }
+    return AuthMapper.toTokens(AuthResponseDto.fromJson(body));
+  }
+
+  Future<AuthUser> currentUser() async {
+    final response = await _apiClient.get<Map<String, dynamic>>(_mePath);
+    final body = response.data;
+    if (body == null) {
+      throw const FormatException('Empty current user response.');
+    }
+    return AuthMapper.toUser(body);
+  }
+
+  Future<void> logout() => _apiClient.post<void>(
+    _logoutPath,
+    options: Options(
+      extra: {AuthenticationInterceptor.skipAuthRefreshKey: true},
+    ),
+  );
+
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) => _apiClient.post<void>(
+    _changePasswordPath,
+    data: {'old_password': oldPassword, 'new_password': newPassword},
+  );
 
   /// TODO(api): Replace these paths and implementations when password recovery
   /// endpoints are supplied by the CSMS backend contract.
