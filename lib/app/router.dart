@@ -14,6 +14,8 @@ import '../features/expenses/presentation/pages/expenses_page.dart';
 import '../features/reports/presentation/pages/reports_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
 import '../features/sites/presentation/pages/sites_page.dart';
+import '../features/users/presentation/pages/user_details_page.dart';
+import '../features/users/presentation/pages/users_page.dart';
 import '../features/workers/presentation/pages/worker_details_page.dart';
 import '../features/workers/presentation/pages/workers_page.dart';
 import '../shared/layouts/page_scaffold.dart';
@@ -23,6 +25,8 @@ abstract final class AppRoutes {
   static const login = '/login';
   static const forgotPassword = '/forgot-password';
   static const dashboard = '/dashboard';
+  static const users = '/users';
+  static const userDetails = '/users/:id';
   static const workers = '/workers';
   static const workerDetails = '/workers/:id';
   static const sites = '/sites';
@@ -59,6 +63,12 @@ GoRouter createAppRouter(Ref ref) => GoRouter(
     if (location == AppRoutes.splash || isPublicRoute) {
       return _defaultRouteFor(session.user!.role);
     }
+    // RBAC: Protect User Management routes (Admin only)
+    if (location.startsWith(AppRoutes.users)) {
+      if (session.user!.role != UserRole.admin) {
+        return _defaultRouteFor(session.user!.role);
+      }
+    }
     return null;
   },
   routes: [
@@ -83,6 +93,24 @@ GoRouter createAppRouter(Ref ref) => GoRouter(
             GoRoute(
               path: AppRoutes.dashboard,
               builder: (context, state) => const DashboardPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.users,
+              builder: (context, state) => const UsersPage(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (context, state) {
+                    final idStr = state.pathParameters['id'];
+                    final id = int.tryParse(idStr ?? '') ?? 0;
+                    return UserDetailsPage(userId: id);
+                  },
+                ),
+              ],
             ),
           ],
         ),

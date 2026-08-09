@@ -20,36 +20,42 @@ class AppPageScaffold extends ConsumerWidget {
       roles: [UserRole.admin],
     ),
     _NavigationDestination(
+      'Users',
+      Icons.manage_accounts_outlined,
+      branchIndex: 1,
+      roles: [UserRole.admin],
+    ),
+    _NavigationDestination(
       'Workers',
       Icons.groups_outlined,
-      branchIndex: 1,
+      branchIndex: 2,
       roles: [UserRole.admin, UserRole.supervisor],
     ),
     _NavigationDestination(
       'Sites',
       Icons.location_city_outlined,
-      branchIndex: 2,
+      branchIndex: 3,
       roles: [UserRole.admin],
     ),
     _NavigationDestination(
       'Attendance',
       Icons.fact_check_outlined,
-      branchIndex: 3,
+      branchIndex: 4,
       roles: [UserRole.admin, UserRole.supervisor],
     ),
     _NavigationDestination(
       'Expenses',
       Icons.receipt_long_outlined,
-      branchIndex: 4,
+      branchIndex: 5,
       roles: [UserRole.admin, UserRole.supervisor],
     ),
     _NavigationDestination(
       'Reports',
       Icons.assessment_outlined,
-      branchIndex: 5,
+      branchIndex: 6,
       roles: [UserRole.admin],
     ),
-    _NavigationDestination('Settings', Icons.settings_outlined, branchIndex: 6),
+    _NavigationDestination('Settings', Icons.settings_outlined, branchIndex: 7),
   ];
 
   @override

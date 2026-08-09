@@ -526,8 +526,6 @@ Inactive users cannot log in.
 
 Future
 
-Profile Photo
-
 Activity History
 
 ---

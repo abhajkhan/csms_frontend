@@ -11,11 +11,11 @@ import '../mapper/auth_mapper.dart';
 class AuthRepository {
   AuthRepository(this._apiClient);
 
-  static const _loginPath = '/api/v1/auth/login';
-  static const _refreshPath = '/api/v1/auth/refresh';
-  static const _logoutPath = '/api/v1/auth/logout';
-  static const _mePath = '/api/v1/auth/me';
-  static const _changePasswordPath = '/api/v1/auth/change-password';
+  static const _loginPath = 'auth/login';
+  static const _refreshPath = 'auth/refresh';
+  static const _logoutPath = 'auth/logout';
+  static const _mePath = 'auth/me';
+  static const _changePasswordPath = 'auth/change-password';
   final ApiClient _apiClient;
 
   Future<AuthTokens> login({

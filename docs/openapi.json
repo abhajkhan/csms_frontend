@@ -1,0 +1,1489 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Construction Site Management System",
+        "description": "REST API for the Construction Site Management System. Manages labour, attendance, expenses, warehouse inventory, and purchase activity across construction sites.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User login",
+                "description": "Authenticate user by phone & password and issue access + refresh tokens.",
+                "operationId": "login_api_v1_auth_login_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Refresh access token",
+                "description": "Validate refresh token and issue a fresh access token and refresh token pair.",
+                "operationId": "refresh_tokens_api_v1_auth_refresh_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RefreshRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User logout",
+                "description": "Invalidate session on client side.",
+                "operationId": "logout_api_v1_auth_logout_post",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StandardResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Current user profile",
+                "description": "Return authenticated user profile.",
+                "operationId": "get_me_api_v1_auth_me_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CurrentUserResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/change-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Change account password",
+                "description": "Change current authenticated user password.",
+                "operationId": "change_password_api_v1_auth_change_password_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PasswordChangeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StandardResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/users": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create user account",
+                "description": "Create a new Admin or Supervisor account (Admin only).",
+                "operationId": "create_user_api_v1_users_post",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "List all users",
+                "description": "List all registered user accounts with pagination (Admin only).",
+                "operationId": "list_users_api_v1_users_get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Page number (1-indexed).",
+                            "default": 1,
+                            "title": "Page"
+                        },
+                        "description": "Page number (1-indexed)."
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "description": "Number of items per page (1–100).",
+                            "default": 20,
+                            "title": "Page Size"
+                        },
+                        "description": "Number of items per page (1–100)."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{id}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get user profile",
+                "description": "Get user details by ID (Admin can view any user; Supervisor can view only self).",
+                "operationId": "get_user_by_id_api_v1_users__id__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update user details",
+                "description": "Update user profile fields (Admin can update any user; Supervisor can update only self).",
+                "operationId": "update_user_api_v1_users__id__patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserUpdate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Deactivate user",
+                "description": "Deactivate a user account by setting is_active = False (Admin only).",
+                "operationId": "deactivate_user_api_v1_users__id__delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StandardResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{id}/activate": {
+            "patch": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Reactivate user",
+                "description": "Reactivate a user account by setting is_active = True (Admin only).",
+                "operationId": "activate_user_api_v1_users__id__activate_patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StandardResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workers": {
+            "post": {
+                "tags": [
+                    "Workers"
+                ],
+                "summary": "Register worker",
+                "description": "Register a new worker with full name and daily wage (Admin only).",
+                "operationId": "create_worker_api_v1_workers_post",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WorkerCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkerResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Workers"
+                ],
+                "summary": "List workers",
+                "description": "List all worker accounts with pagination (Admin and Supervisor). Filter by active status using ?is_active=true or ?is_active=false. When omitted, returns all workers.",
+                "operationId": "list_workers_api_v1_workers_get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Filter workers by active status. When omitted, returns all workers.",
+                            "title": "Is Active"
+                        },
+                        "description": "Filter workers by active status. When omitted, returns all workers."
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Page number (1-indexed).",
+                            "default": 1,
+                            "title": "Page"
+                        },
+                        "description": "Page number (1-indexed)."
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "description": "Number of items per page (1–100).",
+                            "default": 20,
+                            "title": "Page Size"
+                        },
+                        "description": "Number of items per page (1–100)."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkerListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workers/{id}": {
+            "get": {
+                "tags": [
+                    "Workers"
+                ],
+                "summary": "Get worker profile",
+                "description": "Get worker details by ID (Admin and Supervisor). Returns active and inactive workers.",
+                "operationId": "get_worker_by_id_api_v1_workers__id__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkerResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Workers"
+                ],
+                "summary": "Update worker details",
+                "description": "Update worker full name or daily wage rate (Admin only).",
+                "operationId": "update_worker_api_v1_workers__id__patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WorkerUpdate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkerResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Workers"
+                ],
+                "summary": "Deactivate worker",
+                "description": "Deactivate a worker account by setting is_active = False (Admin only).",
+                "operationId": "deactivate_worker_api_v1_workers__id__delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StandardResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workers/{id}/activate": {
+            "patch": {
+                "tags": [
+                    "Workers"
+                ],
+                "summary": "Reactivate worker",
+                "description": "Reactivate a worker account by setting is_active = True (Admin only).",
+                "operationId": "activate_worker_api_v1_workers__id__activate_patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StandardResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/": {
+            "get": {
+                "tags": [
+                    "Root"
+                ],
+                "summary": "API root",
+                "description": "Return basic API information.",
+                "operationId": "root__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": true,
+                                    "type": "object",
+                                    "title": "Response Root  Get"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "tags": [
+                    "Root"
+                ],
+                "summary": "Health check",
+                "description": "Return service health status.\n\nUsed by load balancers and monitoring systems.\nAlways returns 200 while the process is alive.",
+                "operationId": "health_check_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": true,
+                                    "type": "object",
+                                    "title": "Response Health Check Health Get"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CurrentUserResponse": {
+                "properties": {
+                    "user_id": {
+                        "type": "integer",
+                        "title": "User Id",
+                        "description": "User primary key."
+                    },
+                    "role": {
+                        "$ref": "#/components/schemas/UserRole",
+                        "description": "Top-level user role."
+                    },
+                    "driver_type": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/DriverType"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "description": "Driver sub-type; null for non-driver accounts."
+                    },
+                    "full_name": {
+                        "type": "string",
+                        "title": "Full Name",
+                        "description": "User display name."
+                    },
+                    "phone": {
+                        "type": "string",
+                        "title": "Phone",
+                        "description": "Registered phone number."
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "Is Active",
+                        "description": "Account active status.",
+                        "default": true
+                    },
+                    "acc_balance": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Acc Balance",
+                        "description": "Current wallet/account balance.",
+                        "examples": [
+                            1000.0
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "user_id",
+                    "role",
+                    "full_name",
+                    "phone"
+                ],
+                "title": "CurrentUserResponse",
+                "description": "Profile of the authenticated user returned by ``GET /auth/me``."
+            },
+            "DriverType": {
+                "type": "string",
+                "enum": [
+                    "hitachi",
+                    "ajax",
+                    "normal"
+                ],
+                "title": "DriverType",
+                "description": "Sub-type that differentiates the three driver roles.\n\nOnly meaningful when ``Users.role == UserRole.DRIVER``.\nDesign ref: CSMS_SPEC.md §5 User Roles."
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "LoginRequest": {
+                "properties": {
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 7,
+                        "title": "Phone",
+                        "description": "Registered phone number.",
+                        "examples": [
+                            "03001234567"
+                        ]
+                    },
+                    "password": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "minLength": 6,
+                        "title": "Password",
+                        "description": "Account password.",
+                        "examples": [
+                            "secureP@ssw0rd"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "phone",
+                    "password"
+                ],
+                "title": "LoginRequest",
+                "description": "Request body for ``POST /auth/login``."
+            },
+            "PasswordChangeRequest": {
+                "properties": {
+                    "old_password": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "minLength": 6,
+                        "title": "Old Password",
+                        "description": "Current account password."
+                    },
+                    "new_password": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "minLength": 6,
+                        "title": "New Password",
+                        "description": "New account password (min 6 chars)."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "old_password",
+                    "new_password"
+                ],
+                "title": "PasswordChangeRequest",
+                "description": "Request body for ``POST /auth/change-password``."
+            },
+            "RefreshRequest": {
+                "properties": {
+                    "refresh_token": {
+                        "type": "string",
+                        "title": "Refresh Token",
+                        "description": "A valid JWT refresh token obtained at login."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "refresh_token"
+                ],
+                "title": "RefreshRequest",
+                "description": "Request body for ``POST /auth/refresh``."
+            },
+            "StandardResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "title": "Success",
+                        "default": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "title": "Message",
+                        "default": "Operation completed successfully."
+                    }
+                },
+                "type": "object",
+                "title": "StandardResponse",
+                "description": "Standard generic response envelope with success flag and message."
+            },
+            "TokenResponse": {
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "title": "Access Token",
+                        "description": "Short-lived JWT access token."
+                    },
+                    "refresh_token": {
+                        "type": "string",
+                        "title": "Refresh Token",
+                        "description": "Long-lived JWT refresh token."
+                    },
+                    "token_type": {
+                        "type": "string",
+                        "title": "Token Type",
+                        "description": "Token scheme — always \"bearer\".",
+                        "default": "bearer"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "access_token",
+                    "refresh_token"
+                ],
+                "title": "TokenResponse",
+                "description": "Response body for ``POST /auth/login`` and ``POST /auth/refresh``."
+            },
+            "UserCreate": {
+                "properties": {
+                    "full_name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "minLength": 2,
+                        "title": "Full Name",
+                        "description": "Full name of the user.",
+                        "examples": [
+                            "John Doe"
+                        ]
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 7,
+                        "title": "Phone",
+                        "description": "Registered phone number.",
+                        "examples": [
+                            "03001234567"
+                        ]
+                    },
+                    "password": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "minLength": 6,
+                        "title": "Password",
+                        "description": "Account password (min 6 chars).",
+                        "examples": [
+                            "secureP@ssw0rd"
+                        ]
+                    },
+                    "role": {
+                        "$ref": "#/components/schemas/UserRole",
+                        "description": "User role (must be 'admin' or 'supervisor')."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "full_name",
+                    "phone",
+                    "password",
+                    "role"
+                ],
+                "title": "UserCreate",
+                "description": "Request body for creating a user account (Admin only)."
+            },
+            "UserListResponse": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/UserResponse"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "title": "Page"
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "title": "Page Size"
+                    },
+                    "total_pages": {
+                        "type": "integer",
+                        "title": "Total Pages"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "page_size",
+                    "total_pages"
+                ],
+                "title": "UserListResponse",
+                "description": "Paginated response DTO for user listings."
+            },
+            "UserResponse": {
+                "properties": {
+                    "user_id": {
+                        "type": "integer",
+                        "title": "User Id",
+                        "description": "User primary key."
+                    },
+                    "role": {
+                        "$ref": "#/components/schemas/UserRole",
+                        "description": "User role."
+                    },
+                    "driver_type": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/DriverType"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "description": "Driver sub-type if applicable."
+                    },
+                    "full_name": {
+                        "type": "string",
+                        "title": "Full Name",
+                        "description": "User full name."
+                    },
+                    "phone": {
+                        "type": "string",
+                        "title": "Phone",
+                        "description": "User phone number."
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "Is Active",
+                        "description": "Active status."
+                    },
+                    "acc_balance": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Acc Balance",
+                        "description": "Current wallet/account balance.",
+                        "examples": [
+                            1000.0
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "user_id",
+                    "role",
+                    "full_name",
+                    "phone",
+                    "is_active"
+                ],
+                "title": "UserResponse",
+                "description": "Response DTO for user profile representations."
+            },
+            "UserRole": {
+                "type": "string",
+                "enum": [
+                    "admin",
+                    "supervisor",
+                    "driver"
+                ],
+                "title": "UserRole",
+                "description": "Top-level role for every account in the system.\n\nDesign ref: CSMS_SPEC.md §6.1 Users."
+            },
+            "UserUpdate": {
+                "properties": {
+                    "full_name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 255,
+                                "minLength": 2
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Full Name",
+                        "description": "Updated full name."
+                    },
+                    "phone": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 20,
+                                "minLength": 7
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Phone",
+                        "description": "Updated phone number."
+                    }
+                },
+                "type": "object",
+                "title": "UserUpdate",
+                "description": "Request body for updating a user profile.\n\nNote: Password changes are strictly prohibited here and must use\n``POST /auth/change-password``."
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    },
+                    "input": {
+                        "title": "Input"
+                    },
+                    "ctx": {
+                        "type": "object",
+                        "title": "Context"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            },
+            "WorkerCreate": {
+                "properties": {
+                    "full_name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "minLength": 1,
+                        "title": "Full Name",
+                        "description": "Worker's full name.",
+                        "examples": [
+                            "Ramesh Kumar"
+                        ]
+                    },
+                    "daily_wage": {
+                        "anyOf": [
+                            {
+                                "type": "number",
+                                "exclusiveMinimum": 0.0
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,10}|(?=[\\d.]{1,13}0*$)\\d{0,10}\\.\\d{0,2}0*$)"
+                            }
+                        ],
+                        "title": "Daily Wage",
+                        "description": "Standard daily wage rate in ₹ (must be greater than 0).",
+                        "examples": [
+                            500.0
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "full_name",
+                    "daily_wage"
+                ],
+                "title": "WorkerCreate",
+                "description": "Schema for registering a new worker."
+            },
+            "WorkerListResponse": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/WorkerResponse"
+                        },
+                        "type": "array",
+                        "title": "Items",
+                        "description": "Page items."
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total",
+                        "description": "Total matching worker records."
+                    },
+                    "page": {
+                        "type": "integer",
+                        "title": "Page",
+                        "description": "Current page number."
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "title": "Page Size",
+                        "description": "Items per page."
+                    },
+                    "total_pages": {
+                        "type": "integer",
+                        "title": "Total Pages",
+                        "description": "Total number of pages."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "page_size",
+                    "total_pages"
+                ],
+                "title": "WorkerListResponse",
+                "description": "Schema for paginated worker list responses."
+            },
+            "WorkerResponse": {
+                "properties": {
+                    "worker_id": {
+                        "type": "integer",
+                        "title": "Worker Id",
+                        "description": "Unique worker ID."
+                    },
+                    "full_name": {
+                        "type": "string",
+                        "title": "Full Name",
+                        "description": "Worker's full name."
+                    },
+                    "daily_wage": {
+                        "type": "string",
+                        "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                        "title": "Daily Wage",
+                        "description": "Daily wage rate."
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "Is Active",
+                        "description": "Active account status."
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "title": "Created By",
+                        "description": "User ID of creator."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "worker_id",
+                    "full_name",
+                    "daily_wage",
+                    "is_active",
+                    "created_by"
+                ],
+                "title": "WorkerResponse",
+                "description": "Schema for worker detail responses."
+            },
+            "WorkerUpdate": {
+                "properties": {
+                    "full_name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 255,
+                                "minLength": 1
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Full Name",
+                        "description": "Updated worker name."
+                    },
+                    "daily_wage": {
+                        "anyOf": [
+                            {
+                                "type": "number",
+                                "exclusiveMinimum": 0.0
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,10}|(?=[\\d.]{1,13}0*$)\\d{0,10}\\.\\d{0,2}0*$)"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Daily Wage",
+                        "description": "Updated daily wage rate in ₹."
+                    }
+                },
+                "type": "object",
+                "title": "WorkerUpdate",
+                "description": "Schema for updating worker details."
+            }
+        },
+        "securitySchemes": {
+            "OAuth2PasswordBearer": {
+                "type": "oauth2",
+                "flows": {
+                    "password": {
+                        "scopes": {},
+                        "tokenUrl": "/api/v1/auth/login"
+                    }
+                }
+            }
+        }
+    }
+}

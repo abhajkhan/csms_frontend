@@ -52,7 +52,7 @@ class AuthenticationInterceptor extends QueuedInterceptor {
         throw StateError('No refresh token is available.');
       }
       final response = await _refreshDio.post<Map<String, dynamic>>(
-        '/api/v1/auth/refresh',
+        'auth/refresh',
         data: {'refresh_token': refreshToken},
       );
       final body = response.data;
