@@ -13,6 +13,7 @@ import '../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../features/expenses/presentation/pages/expenses_page.dart';
 import '../features/reports/presentation/pages/reports_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
+import '../features/sites/presentation/pages/site_details_page.dart';
 import '../features/sites/presentation/pages/sites_page.dart';
 import '../features/users/presentation/pages/user_details_page.dart';
 import '../features/users/presentation/pages/users_page.dart';
@@ -30,6 +31,7 @@ abstract final class AppRoutes {
   static const workers = '/workers';
   static const workerDetails = '/workers/:id';
   static const sites = '/sites';
+  static const siteDetails = '/sites/:id';
   static const attendance = '/attendance';
   static const expenses = '/expenses';
   static const reports = '/reports';
@@ -137,6 +139,15 @@ GoRouter createAppRouter(Ref ref) => GoRouter(
             GoRoute(
               path: AppRoutes.sites,
               builder: (context, state) => const SitesPage(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (context, state) {
+                    final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                    return SiteDetailsPage(siteId: id);
+                  },
+                ),
+              ],
             ),
           ],
         ),

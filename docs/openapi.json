@@ -500,6 +500,450 @@
                 }
             }
         },
+        "/api/v1/sites": {
+            "post": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "Register construction site",
+                "description": "Register a new construction site with name and location (Admin only).",
+                "operationId": "create_site_api_v1_sites_post",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SiteCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SiteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "List construction sites",
+                "description": "List all construction sites with pagination (All authenticated users). Filter by status using ?status=active, ?status=completed, or ?status=on_hold.",
+                "operationId": "list_sites_api_v1_sites_get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Filter sites by status (active, completed, on_hold).",
+                            "title": "Status"
+                        },
+                        "description": "Filter sites by status (active, completed, on_hold)."
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Page number (1-indexed).",
+                            "default": 1,
+                            "title": "Page"
+                        },
+                        "description": "Page number (1-indexed)."
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "description": "Number of items per page (1–100).",
+                            "default": 20,
+                            "title": "Page Size"
+                        },
+                        "description": "Number of items per page (1–100)."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SiteListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/sites/{id}": {
+            "get": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "Get site profile",
+                "description": "Get construction site details by ID (All authenticated users).",
+                "operationId": "get_site_by_id_api_v1_sites__id__get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SiteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "Update site details",
+                "description": "Update construction site details (Admin only).",
+                "operationId": "update_site_api_v1_sites__id__patch",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SiteUpdate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SiteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "Archive construction site",
+                "description": "Archive a construction site by setting status = 'completed' (Admin only).",
+                "operationId": "archive_site_api_v1_sites__id__delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StandardResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/sites/{site_id}/supervisors": {
+            "post": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "Assign supervisor to site",
+                "description": "Assign a supervisor to a construction site (Admin only).",
+                "operationId": "assign_supervisor_to_site_api_v1_sites__site_id__supervisors_post",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Site Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SiteSupervisorCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SiteSupervisorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "View assigned supervisors",
+                "description": "Get list of all supervisors assigned to a construction site (All authenticated users).",
+                "operationId": "list_site_supervisors_api_v1_sites__site_id__supervisors_get",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Site Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SiteSupervisorResponse"
+                                    },
+                                    "title": "Response List Site Supervisors Api V1 Sites  Site Id  Supervisors Get"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/sites/{site_id}/supervisors/{supervisor_id}": {
+            "delete": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "Deactivate supervisor assignment",
+                "description": "Deactivate a supervisor's active assignment to a construction site (Admin only).",
+                "operationId": "remove_supervisor_from_site_api_v1_sites__site_id__supervisors__supervisor_id__delete",
+                "security": [
+                    {
+                        "OAuth2PasswordBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "site_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Site Id"
+                        }
+                    },
+                    {
+                        "name": "supervisor_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Supervisor Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StandardResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/workers": {
             "post": {
                 "tags": [
@@ -1036,6 +1480,243 @@
                 ],
                 "title": "RefreshRequest",
                 "description": "Request body for ``POST /auth/refresh``."
+            },
+            "SiteCreate": {
+                "properties": {
+                    "site_name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "minLength": 1,
+                        "title": "Site Name",
+                        "description": "Name of the construction site.",
+                        "examples": [
+                            "Metro Station Phase 1"
+                        ]
+                    },
+                    "location": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 500
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Location",
+                        "description": "Physical location or address of the site.",
+                        "examples": [
+                            "Sector G, Islamabad"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "site_name"
+                ],
+                "title": "SiteCreate",
+                "description": "Schema for registering a new construction site."
+            },
+            "SiteListResponse": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/SiteResponse"
+                        },
+                        "type": "array",
+                        "title": "Items",
+                        "description": "Page items."
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total",
+                        "description": "Total matching site records."
+                    },
+                    "page": {
+                        "type": "integer",
+                        "title": "Page",
+                        "description": "Current page number."
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "title": "Page Size",
+                        "description": "Items per page."
+                    },
+                    "total_pages": {
+                        "type": "integer",
+                        "title": "Total Pages",
+                        "description": "Total number of pages."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "page_size",
+                    "total_pages"
+                ],
+                "title": "SiteListResponse",
+                "description": "Schema for paginated site list responses."
+            },
+            "SiteResponse": {
+                "properties": {
+                    "site_id": {
+                        "type": "integer",
+                        "title": "Site Id",
+                        "description": "Unique site ID."
+                    },
+                    "site_name": {
+                        "type": "string",
+                        "title": "Site Name",
+                        "description": "Name of the construction site."
+                    },
+                    "location": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Location",
+                        "description": "Site location address."
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SiteStatus",
+                        "description": "Lifecycle status."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At",
+                        "description": "Creation timestamp."
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "title": "Created By",
+                        "description": "User ID of the admin who created it."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "site_id",
+                    "site_name",
+                    "location",
+                    "status",
+                    "created_at",
+                    "created_by"
+                ],
+                "title": "SiteResponse",
+                "description": "Schema for site detail responses."
+            },
+            "SiteStatus": {
+                "type": "string",
+                "enum": [
+                    "active",
+                    "completed",
+                    "on_hold"
+                ],
+                "title": "SiteStatus",
+                "description": "Lifecycle status of a construction site.\n\nDesign ref: CSMS_SPEC.md §6.2 Site."
+            },
+            "SiteSupervisorCreate": {
+                "properties": {
+                    "site_id": {
+                        "type": "integer",
+                        "title": "Site Id"
+                    },
+                    "supervisor_id": {
+                        "type": "integer",
+                        "title": "Supervisor Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "site_id",
+                    "supervisor_id"
+                ],
+                "title": "SiteSupervisorCreate"
+            },
+            "SiteSupervisorResponse": {
+                "properties": {
+                    "site_id": {
+                        "type": "integer",
+                        "title": "Site Id"
+                    },
+                    "supervisor_id": {
+                        "type": "integer",
+                        "title": "Supervisor Id"
+                    },
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "assigned_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Assigned At"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "Is Active"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "site_id",
+                    "supervisor_id",
+                    "id",
+                    "assigned_at",
+                    "is_active"
+                ],
+                "title": "SiteSupervisorResponse"
+            },
+            "SiteUpdate": {
+                "properties": {
+                    "site_name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 255,
+                                "minLength": 1
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Site Name",
+                        "description": "Updated name of the site."
+                    },
+                    "location": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 500
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Location",
+                        "description": "Updated physical location of the site."
+                    },
+                    "status": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/SiteStatus"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "description": "Updated lifecycle status of the site."
+                    }
+                },
+                "type": "object",
+                "title": "SiteUpdate",
+                "description": "Schema for updating details or status of a site."
             },
             "StandardResponse": {
                 "properties": {
